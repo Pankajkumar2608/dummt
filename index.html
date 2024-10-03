@@ -8,66 +8,43 @@
 <body>
   <h1>Parent Site</h1>
 
-  <!-- Iframe that loads your dApp widget -->
- <iframe
-  src="https://solana-liard-nine.vercel.app/"
-  id="widget-iframe"
-  width="600"
-  height="400"
-  style="border:1px solid black;"
-  sandbox="allow-scripts allow-same-origin allow-popups allow-top-navigation-by-user-activation">
-</iframe>
+  <!-- Iframe that loads the widget site -->
+  <iframe
+    src="https://solana-liard-nine.vercel.app/"
+    id="widget-iframe"
+    width="600"
+    height="400"
+    style="border:1px solid black;">
+  </iframe>
 
-
-  <!-- Hidden message box for when the wallet is not detected -->
-  <div id="wallet-message" style="display: none; background-color: lightgrey; padding: 20px;">
-    <h3>No Solana Wallet Detected</h3>
-    <p>
-      To use this application, you need to connect a Solana wallet.<br />
-      You can <a href="https://phantom.app/download" target="_blank">install Phantom Wallet here</a>.
-    </p>
-  </div>
+  <div id="wallet-status">Waiting for wallet connection...</div>
 
   <script>
     const iframe = document.getElementById('widget-iframe');
 
-    // Function to send wallet data to the iframe
-    function sendWalletDataToIframe(walletPublicKey) {
-      iframe.contentWindow.postMessage({
-        type: 'wallet_connected',
-        publicKey: walletPublicKey,
-        connectionURL: window.location.href,  // Send the parent URL to the iframe
-      }, 'https://solana-liard-nine.vercel.app/');  // Ensure this matches your iframe's origin
-    }
+    // When the iframe loads, request wallet connection
+    iframe.onload = function() {
+      console.log("Iframe loaded, sending message to connect wallet");
+      iframe.contentWindow.postMessage({ type: 'request_wallet_connection' }, 'https://solana-liard-nine.vercel.app/');
+    };
 
-    // Listen for the wallet connection request from the iframe
-    window.addEventListener('message', async (event) => {
-  if (event.origin !== 'https://solana-liard-nine.vercel.app/') {
-    console.warn('Untrusted message origin:', event.origin);
-    return;
-  }
-
-  if (event.data.type === 'request_wallet_connection') {
-    console.log('Iframe requested wallet connection');
-
-    if (window.solana && window.solana.isPhantom) {
-      try {
-        const response = await window.solana.connect();
-        const walletPublicKey = response.publicKey.toString();
-
-        sendWalletDataToIframe(walletPublicKey);
-      } catch (err) {
-        console.error('Wallet connection failed:', err);
-        // Handle specific Phantom errors if needed
+    // Listen for a response from the iframe
+    window.addEventListener('message', (event) => {
+      // Ensure the message comes from the trusted iframe origin
+      if (event.origin !== 'https://solana-liard-nine.vercel.app/') {
+        console.warn('Untrusted message origin:', event.origin);
+        return;
       }
-    } else {
-      console.warn('Phantom wallet not detected');
-      document.getElementById('wallet-message').style.display = 'block';
-    }
-  }
-});
 
-    
+      // Check if the iframe has sent back wallet connection info
+      if (event.data.type === 'wallet_connected') {
+        const publicKey = event.data.publicKey;
+        console.log('Wallet connected with public key:', publicKey);
+
+        // Update the parent site UI to show the wallet connection status
+        document.getElementById('wallet-status').innerText = `Wallet connected: ${publicKey}`;
+      }
+    });
   </script>
 </body>
 </html>
