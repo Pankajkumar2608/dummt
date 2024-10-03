@@ -40,33 +40,32 @@
 
     // Listen for the wallet connection request from the iframe
     window.addEventListener('message', async (event) => {
-      if (event.origin !== 'https://solana-liard-nine.vercel.app/') {
-        console.warn('Untrusted message origin:', event.origin);
-        return;
+  if (event.origin !== 'https://solana-liard-nine.vercel.app/') {
+    console.warn('Untrusted message origin:', event.origin);
+    return;
+  }
+
+  if (event.data.type === 'request_wallet_connection') {
+    console.log('Iframe requested wallet connection');
+
+    if (window.solana && window.solana.isPhantom) {
+      try {
+        const response = await window.solana.connect();
+        const walletPublicKey = response.publicKey.toString();
+
+        sendWalletDataToIframe(walletPublicKey);
+      } catch (err) {
+        console.error('Wallet connection failed:', err);
+        // Handle specific Phantom errors if needed
       }
+    } else {
+      console.warn('Phantom wallet not detected');
+      document.getElementById('wallet-message').style.display = 'block';
+    }
+  }
+});
 
-      // Check if the iframe requested a wallet connection
-      if (event.data.type === 'request_wallet_connection') {
-        console.log('Iframe requested wallet connection');
-
-        // Detect if Phantom wallet is installed
-        if (window.solana && window.solana.isPhantom) {
-          try {
-            // Connect to Phantom wallet
-            const response = await window.solana.connect();
-            const walletPublicKey = response.publicKey.toString();
-
-            // Send wallet data back to the iframe
-            sendWalletDataToIframe(walletPublicKey);
-          } catch (err) {
-            console.error('Wallet connection failed:', err);
-          }
-        } else {
-          // If no wallet is detected, show the install prompt
-          document.getElementById('wallet-message').style.display = 'block';
-        }
-      }
-    });
+    
   </script>
 </body>
 </html>
