@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dummy Parent Site</title>
+</head>
+<body>
+  <h1>Parent Site</h1>
+
+  <!-- This iframe will load the content from your whitelisted widget site -->
+  <iframe
+    src="https://solana-liard-nine.vercel.app/"
+    id="widget-iframe"
+    width="600"
+    height="400"
+    style="border:1px solid black;">
+  </iframe>
+
+  <button id="connect-wallet">Connect Wallet</button>
+
+  <div id="wallet-status">No wallet connected</div>
+
+  <script>
+    const iframe = document.getElementById('widget-iframe');
+
+    // Listen for messages from the iframe
+    window.addEventListener('message', (event) => {
+      // Ensure the message is coming from your whitelisted widget domain
+      if (event.origin !== 'https://solana-liard-nine.vercel.app/') {
+        console.warn('Received message from untrusted origin:', event.origin);
+        return;
+      }
+
+      console.log('Message received from iframe:', event.data);
+
+      // If the iframe requests a wallet connection
+      if (event.data.type === 'request_wallet_connection') {
+        console.log('Iframe requested wallet connection');
+
+        // Simulate a wallet connection (you can replace this with real wallet logic)
+        const walletPublicKey = 'DummyPublicKey123456';
+
+        // Send the wallet connection details back to the iframe
+        iframe.contentWindow.postMessage({
+          type: 'wallet_connected',
+          publicKey: walletPublicKey,
+          connectionURL: window.location.href, // Send the parent URL
+        }, 'https://solana-liard-nine.vercel.app/');
+
+        // Update the wallet status in the parent window
+        document.getElementById('wallet-status').innerText = `Wallet connected: ${walletPublicKey}`;
+      }
+    });
+
+    // Example: If you want to simulate a manual wallet connection using a button
+    document.getElementById('connect-wallet').addEventListener('click', () => {
+      const walletPublicKey = 'ManualDummyPublicKey123456';
+
+      // Send wallet details to the iframe
+      iframe.contentWindow.postMessage({
+        type: 'wallet_connected',
+        publicKey: walletPublicKey,
+        connectionURL: window.location.href, // Send the parent URL
+      }, 'https://solana-liard-nine.vercel.app/');
+
+      // Update the wallet status in the parent window
+      document.getElementById('wallet-status').innerText = `Wallet connected: ${walletPublicKey}`;
+    });
+  </script>
+</body>
+</html>
