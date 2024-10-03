@@ -3,18 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Connect Wallet</title>
+  <title>Parent Site</title>
 </head>
 <body>
-  <h1>Connect Wallet to Phantom</h1>
-  <button id="connect-wallet">Connect Wallet</button>
-  <div id="wallet-status">No wallet connected.</div>
+  <h1>Parent Site</h1>
+
+  <button onclick="openWalletPopup()">Connect wallet</button>
 
   <script>
-    document.getElementById('connect-wallet').addEventListener('click', function() {
-      // Trigger deep link to connect wallet
-      window.location.href = 'https://solana-liard-nine.vercel.app/?app_url=https://dummy-azure-seven.vercel.app/&redirect_link=https://dummy-azure-seven.vercel.app/';
-    });
+    function openWalletPopup() {
+      const walletPopup = window.open(
+        'https://solana-liard-nine.vercel.app/', // A page that triggers wallet interaction
+        'walletPopup',
+        'width=500,height=600'
+      );
+
+      // Listen for messages from the wallet popup
+      window.addEventListener('message', (event) => {
+        if (event.origin !== 'https://solana-liard-nine.vercel.app/') {
+          return;
+        }
+
+        // Handle wallet connection data
+        if (event.data.type === 'wallet_connected') {
+          console.log('Wallet connected:', event.data.publicKey);
+        }
+
+        // Close the popup when the transaction is complete
+        if (event.data.type === 'transaction_completed') {
+          walletPopup.close();
+        }
+      });
+    }
   </script>
 </body>
 </html>
+
