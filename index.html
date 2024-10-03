@@ -9,13 +9,15 @@
   <h1>Parent Site</h1>
 
   <!-- Iframe that loads your dApp widget -->
-  <iframe
-    src="https://solana-liard-nine.vercel.app/"
-    id="widget-iframe"
-    width="600"
-    height="400"
-    style="border:1px solid black;">
-  </iframe>
+ <iframe
+  src="https://solana-liard-nine.vercel.app/"
+  id="widget-iframe"
+  width="600"
+  height="400"
+  style="border:1px solid black;"
+  sandbox="allow-scripts allow-same-origin allow-popups allow-top-navigation-by-user-activation">
+</iframe>
+
 
   <!-- Hidden message box for when the wallet is not detected -->
   <div id="wallet-message" style="display: none; background-color: lightgrey; padding: 20px;">
